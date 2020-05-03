@@ -1,0 +1,159 @@
+import java.util.ArrayList;
+import java.util.Stack;
+import java.util.Queue;
+import java.util.LinkedList;
+
+public class Graph {
+  private ArrayList<Node> nodes;
+  private ArrayList<ArrayList<Edge>> adj;
+  
+  public Graph(){
+    nodes = new ArrayList<Node>();
+    adj = new ArrayList<ArrayList<Edge>>();
+  }
+  
+  //add a node to the datastructure
+  public boolean add(Listing newNode){
+    if (nodes.add(new Node(newNode)) == false || adj.add(new ArrayList<Edge>()) == false){
+      return false;
+    }
+    
+    return true;
+  }
+  
+  //add a connection to the data structure
+  public boolean addEdge(int fromNode, int toNode){
+    //System.out.println(fromNode + " " + toNode);
+    if (fromNode == toNode || adj.get(fromNode).add(new Edge(toNode)) == false){
+      return false;
+    }
+    
+    return true;
+  }
+  
+  public boolean insert(int location, Listing newNode){
+    if (location >= nodes.size()){
+      return false;
+    }
+    
+    nodes.set(location, new Node(newNode));
+    return true;
+  }
+  
+  //search traversal methods
+  //Depth First Traversal Search
+  public SearchResult searchDFT(int key){
+    Stack<Integer> stack = new Stack<Integer>();
+    
+    //house keeping initialization
+    for (Node node: nodes){
+      node.pushed = false;
+    }
+    
+    //monitor variables
+    int examinedNodes = 0;
+    
+    //algorithm
+    stack.push(0);
+    nodes.get(0).pushed = true;
+    
+    while (!stack.empty()){
+      int v = stack.pop();
+      
+      //process node
+      examinedNodes += 1;
+      //test if it is the node I am looking for
+      if (nodes.get(v).listing.compareTo(key)){
+        return new SearchResult(true, examinedNodes, examinedNodes);
+      }
+      //add all the children of the node to the stack to be processed next
+      for (Edge edge: adj.get(v)){
+        //if the child node being examined is not already being examined then add it to the list
+        if (!nodes.get(edge.toNode).pushed){
+          stack.push(edge.toNode);
+          nodes.get(edge.toNode).pushed = true;
+        }
+      }
+    }
+    
+    return new SearchResult(false, examinedNodes, examinedNodes);
+  }
+  
+  //Breadth First Traversal Search
+  public SearchResult searchBFT(int key){
+    Queue<Integer> queue = new LinkedList<Integer>();
+    
+    //house keeping initialization
+    for (Node node: nodes){
+      node.pushed = false;
+    }
+    
+    //monitor variables
+    int examinedNodes = 0;
+    
+    //algorithm
+    queue.add(0);
+    nodes.get(0).pushed = true;
+    
+    while (!queue.isEmpty()){
+      int v = queue.poll();
+      
+      //process node
+      examinedNodes += 1;
+      //test if it is the node I am looking for
+      if (nodes.get(v).listing.compareTo(key)){
+        return new SearchResult(true, examinedNodes, examinedNodes);
+      }
+      //add all the children of the node to the queue to be processed next
+      for (Edge edge: adj.get(v)){
+        //if the child node being examined is not already being examined then add it to the list
+        if (!nodes.get(edge.toNode).pushed){
+          queue.add(edge.toNode);
+          nodes.get(edge.toNode).pushed = true;
+        }
+      }
+    }
+    
+    return new SearchResult(false, examinedNodes, examinedNodes);
+  }
+  
+  //test methods
+  public void show(){
+    for (int i = 0; i < nodes.size(); i++){
+      System.out.println("Node " + i + " is: " + nodes.get(i).listing.toString());
+    }
+  }
+  
+  //utility classes
+  //wrapper for the listing
+  private class Node {
+    Listing listing;
+    boolean pushed;
+    
+    Node (){
+      this(null);
+    }
+    
+    Node(Listing l){
+      listing = l;
+    }
+  }
+  //edge to store the toNode number and weight
+  private class Edge {
+    int toNode;
+    int weight;
+    
+    Edge(){
+      
+    }
+    
+    Edge(int n){
+      this(n, 1);
+    }
+    
+    Edge(int n, int w){
+      toNode = n;
+      weight = w;
+    }
+  }
+}
